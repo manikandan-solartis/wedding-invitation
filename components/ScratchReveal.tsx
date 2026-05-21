@@ -2,12 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-const CANVAS_SIZE = 128;
+const CANVAS_SIZE = 100;
 
-export default function ScratchReveal() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
+interface ScratchCanvasProps {
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  value: string;
+  label: string;
+  onRevealed?: (revealed: boolean) => void;
+}
 
+const ScratchCanvas = ({ canvasRef, value, label, onRevealed }: ScratchCanvasProps) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -15,16 +19,18 @@ export default function ScratchReveal() {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
-    // Set canvas size explicitly
     canvas.width = CANVAS_SIZE * 2;
     canvas.height = CANVAS_SIZE * 2;
 
-    // Draw scratch surface
-    ctx.fillStyle = '#d4af37';
+    // Draw scratch surface with gradient
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#d4af37');
+    gradient.addColorStop(1, '#c9a227');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Add texture
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
     for (let i = 0; i < canvas.width; i += 4) {
       ctx.fillRect(i, 0, 2, canvas.height);
     }
@@ -37,9 +43,7 @@ export default function ScratchReveal() {
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDrawing) {
-        scratch(e);
-      }
+      if (isDrawing) scratch(e);
     };
 
     const handleMouseUp = () => {
@@ -76,7 +80,6 @@ export default function ScratchReveal() {
         y = (e.clientY - rect.top) * (canvas.height / rect.height);
       }
 
-      // Clear the canvas at the scratched location
       ctx.clearRect(x - 20, y - 20, 40, 40);
     };
 
@@ -92,7 +95,7 @@ export default function ScratchReveal() {
 
         const revealPercentage = transparentPixels / (data.length / 4);
         if (revealPercentage > 0.4) {
-          setIsRevealed(true);
+          onRevealed?.(true);
         }
       } catch (e) {
         console.error('Error checking revealed:', e);
@@ -116,69 +119,103 @@ export default function ScratchReveal() {
       canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('touchend', handleTouchEnd);
     };
-  }, []);
+  }, [onRevealed]);
 
   return (
-    <div className="w-full py-16 px-4 relative overflow-hidden">
-      {/* Decorative flowers */}
-      <svg className="absolute top-12 left-10 w-20 h-20 opacity-20 animate-pulse" viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="20" r="12" fill="#ffd700" />
-        <circle cx="80" cy="30" r="12" fill="#ffd700" />
-        <circle cx="85" cy="60" r="12" fill="#ffd700" />
-        <circle cx="50" cy="80" r="12" fill="#ffd700" />
-        <circle cx="20" cy="70" r="12" fill="#ffd700" />
-        <circle cx="15" cy="40" r="12" fill="#ffd700" />
-        <circle cx="50" cy="50" r="8" fill="#ffffff" />
-      </svg>
-
-      <svg className="absolute bottom-12 right-10 w-24 h-24 opacity-15 animate-pulse" viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="20" r="12" fill="#ffd700" />
-        <circle cx="80" cy="30" r="12" fill="#ffd700" />
-        <circle cx="85" cy="60" r="12" fill="#ffd700" />
-        <circle cx="50" cy="80" r="12" fill="#ffd700" />
-        <circle cx="20" cy="70" r="12" fill="#ffd700" />
-        <circle cx="15" cy="40" r="12" fill="#ffd700" />
-        <circle cx="50" cy="50" r="8" fill="#ffffff" />
-      </svg>
-
-      <div className="max-w-2xl mx-auto relative z-10">
-        <h2 className="text-4xl font-light text-center text-white mb-4">Reveal</h2>
-        <p className="text-center text-white/60 mb-8">Scratch to discover the date</p>
-
-        <div className="flex justify-center items-center gap-8 mb-12">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            <div className="absolute w-32 h-32 rounded-full bg-white/5 border-4 border-white/20 flex items-center justify-center pointer-events-none">
-              <svg className="w-12 h-12 text-white/40" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <canvas
-              ref={canvasRef}
-              className="w-32 h-32 rounded-full cursor-pointer shadow-lg"
-              style={{ touchAction: 'none', display: 'block' }}
-            />
-          </div>
-
-          <div className="flex flex-col justify-center gap-4">
-            <div className="text-white/40 text-sm">1</div>
-            <div className="text-white/40 text-sm">1</div>
-            <div className="text-white/40 text-sm">.</div>
-            <div className="text-white/40 text-sm">0</div>
-            <div className="text-white/40 text-sm">6</div>
-          </div>
-
-          <div className="flex flex-col justify-center gap-4">
-            <div className="text-white/40 text-sm">.</div>
-            <div className="text-white/40 text-sm">2</div>
-            <div className="text-white/40 text-sm">0</div>
-            <div className="text-white/40 text-sm">2</div>
-            <div className="text-white/40 text-sm">6</div>
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative w-28 h-28 flex items-center justify-center">
+        <div className="absolute w-28 h-28 rounded-full bg-white/5 border-4 border-amber-400 flex items-center justify-center pointer-events-none z-10">
+          <div className="text-center">
+            <p className="text-white/60 text-xs">{label}</p>
+            <p className="text-white/40 text-2xl font-light">{value}</p>
           </div>
         </div>
+        <canvas
+          ref={canvasRef}
+          className="w-28 h-28 rounded-full cursor-pointer shadow-lg absolute"
+          style={{ touchAction: 'none', display: 'block' }}
+        />
+      </div>
+    </div>
+  );
+};
 
-        {isRevealed && (
-          <div className="text-center animate-fade-in">
-            <p className="text-3xl font-light text-amber-400">11.06.2026</p>
+export default function ScratchReveal() {
+  const dayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const monthCanvasRef = useRef<HTMLCanvasElement>(null);
+  const yearCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const [dayRevealed, setDayRevealed] = useState(false);
+  const [monthRevealed, setMonthRevealed] = useState(false);
+  const [yearRevealed, setYearRevealed] = useState(false);
+
+  return (
+    <div className="w-full min-h-screen py-16 px-4 bg-gradient-to-b from-blue-900 to-blue-950 relative overflow-hidden">
+      {/* Rose Flower Design - Top Left */}
+      <svg className="absolute top-0 left-0 w-48 h-48 opacity-30" viewBox="0 0 200 200" fill="none">
+        {/* Rose petals */}
+        <circle cx="100" cy="60" r="15" fill="#dc143c" />
+        <circle cx="130" cy="75" r="15" fill="#ff1744" />
+        <circle cx="140" cy="110" r="15" fill="#c41c3b" />
+        <circle cx="120" cy="140" r="15" fill="#dc143c" />
+        <circle cx="80" cy="150" r="15" fill="#ff1744" />
+        <circle cx="50" cy="130" r="15" fill="#c41c3b" />
+        <circle cx="40" cy="90" r="15" fill="#dc143c" />
+        <circle cx="60" cy="60" r="15" fill="#ff1744" />
+        <circle cx="100" cy="100" r="12" fill="#ffd700" />
+        {/* Leaves */}
+        <path d="M 120 140 Q 140 130 150 150" stroke="#2d5016" strokeWidth="3" />
+        <path d="M 50 130 Q 30 120 20 140" stroke="#2d5016" strokeWidth="3" />
+      </svg>
+
+      {/* Rose Flower Design - Bottom Right */}
+      <svg className="absolute bottom-0 right-0 w-56 h-56 opacity-25" viewBox="0 0 200 200" fill="none">
+        <circle cx="100" cy="60" r="15" fill="#ff69b4" />
+        <circle cx="130" cy="75" r="15" fill="#ff1493" />
+        <circle cx="140" cy="110" r="15" fill="#ff69b4" />
+        <circle cx="120" cy="140" r="15" fill="#ff1493" />
+        <circle cx="80" cy="150" r="15" fill="#ff69b4" />
+        <circle cx="50" cy="130" r="15" fill="#ff1493" />
+        <circle cx="40" cy="90" r="15" fill="#ff69b4" />
+        <circle cx="60" cy="60" r="15" fill="#ff1493" />
+        <circle cx="100" cy="100" r="12" fill="#ffd700" />
+        <path d="M 120 140 Q 140 130 150 150" stroke="#2d5016" strokeWidth="3" />
+        <path d="M 50 130 Q 30 120 20 140" stroke="#2d5016" strokeWidth="3" />
+      </svg>
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        <h2 className="text-4xl font-light text-center text-white mb-2">Reveal</h2>
+        <p className="text-center text-white/60 mb-12">Scratch each circle to discover the date</p>
+
+        {/* Three Scratch Circles for Day, Month, Year */}
+        <div className="flex justify-center items-center gap-8 mb-16 flex-wrap">
+          <ScratchCanvas
+            canvasRef={dayCanvasRef}
+            value="11"
+            label="DAY"
+            onRevealed={setDayRevealed}
+          />
+          <div className="text-4xl text-amber-400 font-light">·</div>
+          <ScratchCanvas
+            canvasRef={monthCanvasRef}
+            value="06"
+            label="MONTH"
+            onRevealed={setMonthRevealed}
+          />
+          <div className="text-4xl text-amber-400 font-light">·</div>
+          <ScratchCanvas
+            canvasRef={yearCanvasRef}
+            value="2026"
+            label="YEAR"
+            onRevealed={setYearRevealed}
+          />
+        </div>
+
+        {/* Show full date when all revealed */}
+        {dayRevealed && monthRevealed && yearRevealed && (
+          <div className="text-center animate-fade-in mb-8">
+            <p className="text-4xl font-light text-amber-400 mb-2">11.06.2026</p>
+            <p className="text-white/60 text-sm tracking-widest">SAVE THE DATE</p>
           </div>
         )}
       </div>
