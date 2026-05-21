@@ -119,8 +119,29 @@ export default function ScratchReveal() {
   }, []);
 
   return (
-    <div className="w-full py-16 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="w-full py-16 px-4 relative overflow-hidden">
+      {/* Decorative flowers */}
+      <svg className="absolute top-12 left-10 w-20 h-20 opacity-20 animate-pulse" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="20" r="12" fill="#ffd700" />
+        <circle cx="80" cy="30" r="12" fill="#ffd700" />
+        <circle cx="85" cy="60" r="12" fill="#ffd700" />
+        <circle cx="50" cy="80" r="12" fill="#ffd700" />
+        <circle cx="20" cy="70" r="12" fill="#ffd700" />
+        <circle cx="15" cy="40" r="12" fill="#ffd700" />
+        <circle cx="50" cy="50" r="8" fill="#ffffff" />
+      </svg>
+
+      <svg className="absolute bottom-12 right-10 w-24 h-24 opacity-15 animate-pulse" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="20" r="12" fill="#ffd700" />
+        <circle cx="80" cy="30" r="12" fill="#ffd700" />
+        <circle cx="85" cy="60" r="12" fill="#ffd700" />
+        <circle cx="50" cy="80" r="12" fill="#ffd700" />
+        <circle cx="20" cy="70" r="12" fill="#ffd700" />
+        <circle cx="15" cy="40" r="12" fill="#ffd700" />
+        <circle cx="50" cy="50" r="8" fill="#ffffff" />
+      </svg>
+
+      <div className="max-w-2xl mx-auto relative z-10">
         <h2 className="text-4xl font-light text-center text-white mb-4">Reveal</h2>
         <p className="text-center text-white/60 mb-8">Scratch to discover the date</p>
 
@@ -160,6 +181,7 @@ export default function ScratchReveal() {
             <p className="text-3xl font-light text-amber-400">11.06.2026</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

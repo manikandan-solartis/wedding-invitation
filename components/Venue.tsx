@@ -1,7 +1,28 @@
 export default function Venue() {
   return (
-    <div className="w-full py-16 px-4">
-      <div className="max-w-2xl mx-auto text-center">
+    <div className="w-full py-16 px-4 relative overflow-hidden">
+      {/* Decorative flowers */}
+      <svg className="absolute top-8 left-8 w-20 h-20 opacity-20 animate-pulse" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="20" r="12" fill="#ffd700" />
+        <circle cx="80" cy="30" r="12" fill="#ffd700" />
+        <circle cx="85" cy="60" r="12" fill="#ffd700" />
+        <circle cx="50" cy="80" r="12" fill="#ffd700" />
+        <circle cx="20" cy="70" r="12" fill="#ffd700" />
+        <circle cx="15" cy="40" r="12" fill="#ffd700" />
+        <circle cx="50" cy="50" r="8" fill="#ffffff" />
+      </svg>
+
+      <svg className="absolute bottom-8 right-8 w-24 h-24 opacity-15 animate-pulse" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="20" r="12" fill="#ffd700" />
+        <circle cx="80" cy="30" r="12" fill="#ffd700" />
+        <circle cx="85" cy="60" r="12" fill="#ffd700" />
+        <circle cx="50" cy="80" r="12" fill="#ffd700" />
+        <circle cx="20" cy="70" r="12" fill="#ffd700" />
+        <circle cx="15" cy="40" r="12" fill="#ffd700" />
+        <circle cx="50" cy="50" r="8" fill="#ffffff" />
+      </svg>
+
+      <div className="max-w-2xl mx-auto text-center relative z-10">
         <div className="mb-8 flex justify-center">
           <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-amber-400 flex items-center justify-center">
             <svg

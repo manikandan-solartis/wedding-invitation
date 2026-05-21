@@ -12,8 +12,29 @@ export default function Invitation() {
     {
       id: 'intro',
       Component: () => (
-        <div className="w-full h-screen flex flex-col items-center justify-center px-4 bg-white">
-          <div className="text-center">
+        <div className="w-full h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-b from-white to-blue-50 relative overflow-hidden">
+          {/* Decorative flowers */}
+          <svg className="absolute top-10 left-10 w-20 h-20 opacity-20" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="20" r="12" fill="#d4af37" />
+            <circle cx="80" cy="30" r="12" fill="#d4af37" />
+            <circle cx="85" cy="60" r="12" fill="#d4af37" />
+            <circle cx="50" cy="80" r="12" fill="#d4af37" />
+            <circle cx="20" cy="70" r="12" fill="#d4af37" />
+            <circle cx="15" cy="40" r="12" fill="#d4af37" />
+            <circle cx="50" cy="50" r="8" fill="#0051cc" />
+          </svg>
+
+          <svg className="absolute bottom-10 right-10 w-24 h-24 opacity-15" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="20" r="12" fill="#d4af37" />
+            <circle cx="80" cy="30" r="12" fill="#d4af37" />
+            <circle cx="85" cy="60" r="12" fill="#d4af37" />
+            <circle cx="50" cy="80" r="12" fill="#d4af37" />
+            <circle cx="20" cy="70" r="12" fill="#d4af37" />
+            <circle cx="15" cy="40" r="12" fill="#d4af37" />
+            <circle cx="50" cy="50" r="8" fill="#0051cc" />
+          </svg>
+
+          <div className="text-center z-10">
             <p className="text-sm tracking-widest text-blue-900/60 mb-4 uppercase">
               You are cordially invited to celebrate
             </p>
@@ -33,7 +54,7 @@ export default function Invitation() {
                 T S Satheesh
               </h2>
             </div>
-            <p className="text-white/70 text-sm">scroll down to explore</p>
+            <p className="text-blue-900/50 text-sm">scroll down to explore</p>
           </div>
         </div>
       ),
