@@ -182,7 +182,6 @@ export default function ScratchReveal() {
           </div>
         )}
       </div>
-      </div>
     </div>
   );
 }
