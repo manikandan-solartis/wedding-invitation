@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 const CANVAS_SIZE = 100;
 
 interface ScratchCanvasProps {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
   value: string;
   label: string;
   onRevealed?: (revealed: boolean) => void;
