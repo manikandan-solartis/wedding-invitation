@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+const CANVAS_SIZE = 128;
+
 export default function ScratchReveal() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -10,12 +12,12 @@ export default function ScratchReveal() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    // Set canvas size explicitly
+    canvas.width = CANVAS_SIZE * 2;
+    canvas.height = CANVAS_SIZE * 2;
 
     // Draw scratch surface
     ctx.fillStyle = '#d4af37';
@@ -23,35 +25,21 @@ export default function ScratchReveal() {
 
     // Add texture
     ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    for (let i = 0; i < canvas.width; i += 2) {
-      ctx.fillRect(i, 0, 1, canvas.height);
+    for (let i = 0; i < canvas.width; i += 4) {
+      ctx.fillRect(i, 0, 2, canvas.height);
     }
 
     let isDrawing = false;
 
-    const scratch = (e: MouseEvent | TouchEvent) => {
-      if (!isDrawing && e.type !== 'mousedown' && e.type !== 'touchstart') return;
-
-      const rect = canvas.getBoundingClientRect();
-      let x, y;
-
-      if (e instanceof TouchEvent) {
-        x = e.touches[0].clientX - rect.left;
-        y = e.touches[0].clientY - rect.top;
-      } else {
-        x = e.clientX - rect.left;
-        y = e.clientY - rect.top;
-      }
-
-      ctx.clearRect(x - 15, y - 15, 30, 30);
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.beginPath();
-      ctx.arc(x, y, 15, 0, Math.PI * 2);
-      ctx.fill();
+    const handleMouseDown = (e: MouseEvent) => {
+      isDrawing = true;
+      scratch(e);
     };
 
-    const handleMouseDown = () => {
-      isDrawing = true;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDrawing) {
+        scratch(e);
+      }
     };
 
     const handleMouseUp = () => {
@@ -59,8 +47,16 @@ export default function ScratchReveal() {
       checkRevealed();
     };
 
-    const handleTouchStart = () => {
+    const handleTouchStart = (e: TouchEvent) => {
       isDrawing = true;
+      scratch(e);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isDrawing) {
+        e.preventDefault();
+        scratch(e);
+      }
     };
 
     const handleTouchEnd = () => {
@@ -68,33 +64,56 @@ export default function ScratchReveal() {
       checkRevealed();
     };
 
-    canvas.addEventListener('mousemove', scratch);
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('touchmove', scratch);
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchend', handleTouchEnd);
+    const scratch = (e: MouseEvent | TouchEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      let x, y;
 
-    const checkRevealed = () => {
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-      let transparentPixels = 0;
-
-      for (let i = 3; i < data.length; i += 4) {
-        if (data[i] < 128) transparentPixels++;
+      if (e instanceof TouchEvent) {
+        x = (e.touches[0].clientX - rect.left) * (canvas.width / rect.width);
+        y = (e.touches[0].clientY - rect.top) * (canvas.height / rect.height);
+      } else {
+        x = (e.clientX - rect.left) * (canvas.width / rect.width);
+        y = (e.clientY - rect.top) * (canvas.height / rect.height);
       }
 
-      if (transparentPixels / (data.length / 4) > 0.5) {
-        setIsRevealed(true);
+      // Clear the canvas at the scratched location
+      ctx.clearRect(x - 20, y - 20, 40, 40);
+    };
+
+    const checkRevealed = () => {
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        let transparentPixels = 0;
+
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 128) transparentPixels++;
+        }
+
+        const revealPercentage = transparentPixels / (data.length / 4);
+        if (revealPercentage > 0.4) {
+          setIsRevealed(true);
+        }
+      } catch (e) {
+        console.error('Error checking revealed:', e);
       }
     };
 
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseUp);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchend', handleTouchEnd);
+
     return () => {
-      canvas.removeEventListener('mousemove', scratch);
       canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('touchmove', scratch);
+      canvas.removeEventListener('mouseleave', handleMouseUp);
       canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
       canvas.removeEventListener('touchend', handleTouchEnd);
     };
   }, []);
@@ -105,34 +124,34 @@ export default function ScratchReveal() {
         <h2 className="text-4xl font-light text-center text-white mb-4">Reveal</h2>
         <p className="text-center text-white/60 mb-8">Scratch to discover the date</p>
 
-        <div className="flex justify-center gap-8 mb-12">
-          <div className="relative w-32 h-32">
-            <canvas
-              ref={canvasRef}
-              className="w-32 h-32 rounded-full cursor-pointer shadow-lg absolute inset-0"
-              style={{ touchAction: 'none' }}
-            />
-            <div className="w-32 h-32 rounded-full bg-white/5 border-4 border-white/20 flex items-center justify-center absolute inset-0">
+        <div className="flex justify-center items-center gap-8 mb-12">
+          <div className="relative w-32 h-32 flex items-center justify-center">
+            <div className="absolute w-32 h-32 rounded-full bg-white/5 border-4 border-white/20 flex items-center justify-center pointer-events-none">
               <svg className="w-12 h-12 text-white/40" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
+            <canvas
+              ref={canvasRef}
+              className="w-32 h-32 rounded-full cursor-pointer shadow-lg"
+              style={{ touchAction: 'none', display: 'block' }}
+            />
           </div>
 
           <div className="flex flex-col justify-center gap-4">
-            <div className="text-white/40">1</div>
-            <div className="text-white/40">1</div>
-            <div className="text-white/40">.</div>
-            <div className="text-white/40">0</div>
-            <div className="text-white/40">6</div>
+            <div className="text-white/40 text-sm">1</div>
+            <div className="text-white/40 text-sm">1</div>
+            <div className="text-white/40 text-sm">.</div>
+            <div className="text-white/40 text-sm">0</div>
+            <div className="text-white/40 text-sm">6</div>
           </div>
 
           <div className="flex flex-col justify-center gap-4">
-            <div className="text-white/40">.</div>
-            <div className="text-white/40">2</div>
-            <div className="text-white/40">0</div>
-            <div className="text-white/40">2</div>
-            <div className="text-white/40">6</div>
+            <div className="text-white/40 text-sm">.</div>
+            <div className="text-white/40 text-sm">2</div>
+            <div className="text-white/40 text-sm">0</div>
+            <div className="text-white/40 text-sm">2</div>
+            <div className="text-white/40 text-sm">6</div>
           </div>
         </div>
 
