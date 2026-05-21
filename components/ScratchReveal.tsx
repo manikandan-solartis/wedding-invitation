@@ -213,9 +213,21 @@ export default function ScratchReveal() {
 
         {/* Show full date when all revealed */}
         {dayRevealed && monthRevealed && yearRevealed && (
-          <div className="text-center animate-fade-in mb-8">
-            <p className="text-4xl font-light text-amber-400 mb-2">11.06.2026</p>
-            <p className="text-white/60 text-sm tracking-widest">SAVE THE DATE</p>
+          <div className="text-center animate-fade-in mt-16 pt-12 border-t border-amber-400/30">
+            <div className="mb-6">
+              <svg className="w-16 h-16 mx-auto text-amber-400 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            </div>
+            <div className="bg-gradient-to-r from-transparent via-amber-400/20 to-transparent p-8 rounded-lg">
+              <p className="text-5xl font-light text-amber-400 mb-4 tracking-wide">11 . 06 . 2026</p>
+              <p className="text-white/80 text-lg font-light mb-2">Wedding Day</p>
+              <p className="text-white/60 text-sm tracking-widest uppercase">Save the Date</p>
+            </div>
+            <div className="mt-8">
+              <p className="text-white/50 text-sm">📍 M.K.S Mahal</p>
+              <p className="text-white/50 text-xs mt-2">Kalumangalam Main Road, Maharaj</p>
+            </div>
           </div>
         )}
       </div>
